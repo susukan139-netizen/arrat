@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AR RAT</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:#fff;font-family:Arial;text-align:center}
+.box{border:2px solid red;border-radius:18px;padding:20px;max-width:340px;margin:30px auto;box-shadow:0 0 30px red}
+input{width:100%;padding:15px;font-size:28px;text-align:center;letter-spacing:15px;border-radius:12px;border:2px solid #00ff88;background:#111;color:#00ff88;margin:15px 0}
+.btn{padding:15px;font-size:18px;margin:5px;width:100%;border:none;border-radius:12px;font-weight:bold}
+.hijau{background:#00ff88}.biru{background:#0099ff;color:#fff}.merah{background:red;color:#fff}.kuning{background:yellow}.ungu{background:#a100ff;color:#fff}.oren{background:orange}.abu{background:#444;color:#fff}
+#main{display:none;padding:10px}
+video{width:100%;max-width:340px;border-radius:12px;background:#111}
+#welcome{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#000;z-index:50;font-size:38px;font-weight:900;color:#00ff88}
+#recDot{display:none;color:red;font-weight:bold}
+</style>
+</head>
+<body>
+<div id="lock">
+  <div class="box">
+    <div style="font-size:22px">[ AR RAT ]</div>
+    <h2 style="color:red">AR RAT SYSTEM</h2>
+    <p>PRANK GAME - Ketik PIN</p>
+    <!-- CARA BARU: KETIK LANGSUNG -->
+    <input id="pinInput" type="tel" inputmode="numeric" maxlength="4" placeholder="____" autocomplete="off">
+    <p style="font-size:12px;color:#aaa">Ketik 1111 nganggo keyboard HP-mu, terus pencet tombol ijo</p>
+    <button class="hijau btn" onclick="cekPin2()">MASUK ✓</button>
+    <p id="pesan" style="color:yellow"></p>
+    <p style="font-size:11px;color:#888">PIN: 1111 | Nek keyboard ora metu, pencet kolom-e disit</p>
+    <button class="biru btn" onclick="tesJS()">TES TOMBOL</button>
+  </div>
+</div>
+<div id="welcome">WELCOME TO<br>AR RAT</div>
+<div id="main">
+  <h2>KENA PRANK!</h2>
+  <p id="status">Koe wis mlebu!</p>
+  <div id="labelCam" style="color:#00ff88">Kamera: -</div>
+  <div id="recDot">REC <span id="detik">0</span> detik</div>
+  <video id="vid" autoplay playsinline muted></video>
+  <button class="biru btn" onclick="gantiKamera('environment')">KAMERA BELAKANG</button>
+  <button class="ungu btn" onclick="gantiKamera('user')">KAMERA DEPAN</button>
+  <button class="oren btn" onclick="tukerKamera()">TUKER KAMERA</button>
+  <button class="merah btn" id="btnRekam" onclick="mulaiRekam()">MULAI REKAM VIDEO</button>
+  <button class="abu btn" id="btnStop" onclick="stopRekam()" style="display:none">STOP + SIMPAN VIDEO</button>
+  <div id="hasilVideo"></div>
+  <button class="kuning btn" onclick="senter20()">SENTER KEDIP 20x</button>
+  <button class="merah btn" onclick="matiSenter()">MATIKE SENTER</button>
+  <button class="hijau btn" onclick="foto()">JEPRET FOTO</button>
+  <div id="hasil"></div>
+</div>
+<script>
+function tesJS(){ alert("JS URIP! Tombol berfungsi. Saiki ketik 1111 neng kolom."); }
+function cekPin2(){
+  var pin = document.getElementById("pinInput").value;
+  if(pin === "1111"){
+    document.getElementById("welcome").style.display = "flex";
+    setTimeout(function(){
+      document.getElementById("welcome").style.display = "none";
+      document.getElementById("lock").style.display = "none";
+      document.getElementById("main").style.display = "block";
+    }, 1500);
+  } else {
+    document.getElementById("pesan").innerHTML = "PIN SALAH! Koe ngetik: " + pin + " - Sing bener 1111";
+    document.getElementById("pinInput").value = "";
+  }
+}
+var stream=null, track=null, modeKamera="environment";
+var recorder=null, potongan=[], timerRekam=null, detikRekam=0;
+async function gantiKamera(mode){
+  modeKamera=mode;
+  try{ if(stream) stream.getTracks().forEach(t=>t.stop()); stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:mode}, audio:true}); document.getElementById("vid").srcObject=stream; track=stream.getVideoTracks()[0]; document.getElementById("labelCam").innerHTML = mode==="user" ? "Kamera: DEPAN" : "Kamera: BELAKANG"; }catch(e){ document.getElementById("status").innerHTML="Pencet IZINKAN kamera!"; }
+}
+function tukerKamera(){ if(modeKamera==="environment") gantiKamera("user"); else gantiKamera("environment"); }
+function mulaiRekam(){
+  if(!stream){ document.getElementById("status").innerHTML="Buka kamera disit!"; return; }
+  potongan=[]; recorder=new MediaRecorder(stream);
+  recorder.ondataavailable=e=>{ if(e.data.size>0) potongan.push(e.data); };
+  recorder.onstop=()=>{ let blob=new Blob(potongan,{type:"video/webm"}); let url=URL.createObjectURL(blob); let v=document.createElement("video"); v.src=url; v.controls=true; v.style.width="100%"; let a=document.createElement("a"); a.href=url; a.download="arrat-video.webm"; a.innerHTML="DOWNLOAD VIDEO"; a.style.display="block"; a.style.color="yellow"; document.getElementById("hasilVideo").prepend(a); document.getElementById("hasilVideo").prepend(v); };
+  recorder.start(); detikRekam=0; document.getElementById("recDot").style.display="block"; document.getElementById("btnRekam").style.display="none"; document.getElementById("btnStop").style.display="block"; timerRekam=setInterval(()=>{ detikRekam++; document.getElementById("detik").innerText=detikRekam; },1000);
+}
+function stopRekam(){ if(recorder) recorder.stop(); clearInterval(timerRekam); document.getElementById("recDot").style.display="none"; document.getElementById("btnRekam").style.display="block"; document.getElementById("btnStop").style.display="none"; }
+function tidur(ms){return new Promise(r=>setTimeout(r,ms));}
+async function senter20(){ if(!track){ document.getElementById("status").innerHTML="Buka kamera disit!"; return; } try{ for(let i=0;i<20;i++){ await track.applyConstraints({advanced:[{torch:true}]}); await tidur(150); await track.applyConstraints({advanced:[{torch:false}]}); await tidur(150); } }catch(e){ document.getElementById("status").innerHTML="HP ora support senter."; } }
+async function matiSenter(){ if(!track) return; try{await track.applyConstraints({advanced:[{torch:false}]});}catch(e){} }
+function foto(){ let v=document.getElementById("vid"); let c=document.createElement("canvas"); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext("2d").drawImage(v,0,0); let img=document.createElement("img"); img.src=c.toDataURL("image/png"); img.style.width="100%"; document.getElementById("hasil").prepend(img); }
+</script>
+</body>
+</html>
