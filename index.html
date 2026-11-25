@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AR RAT - Main Bareng</title>
+<style>
+body{margin:0;background:#0f172a;color:white;font-family:sans-serif;text-align:center;padding:20px}
+.box{background:#1e293b;padding:20px;border-radius:16px;max-width:400px;margin:20px auto}
+input{font-size:24px;padding:12px;width:120px;text-align:center;border-radius:10px;border:none;letter-spacing:8px}
+button{background:#22c55e;color:white;border:none;padding:14px 20px;font-size:18px;border-radius:12px;width:100%;margin-top:12px}
+button.red{background:#ef4444}
+video{width:100%;border-radius:12px;background:black;margin-top:12px}
+.small{font-size:13px;color:#cbd5e1}
+</style>
+</head>
+<body>
+<h2>AR RAT</h2>
+<p class="small">Game prank bareng kanca. Ora ngirim data neng ndi-ndi.</p>
+
+<div class="box" id="pinBox">
+  <h3>Mlebokna PIN</h3>
+  <p class="small">PIN-e: 1111</p>
+  <input id="pin" inputmode="numeric" maxlength="4" placeholder="****">
+  <button onclick="cekPin()">Mlebu</button>
+  <p id="pinError" style="color:#f87171"></p>
+</div>
+
+<div class="box" id="izinBox" style="display:none">
+  <h3>Arep Melu Main?</h3>
+  <p>Game iki bakal njaluk <b>izin kamera</b> kanggo nampilna wajah koe neng layar HP koe dewek.</p>
+  <p class="small">Kamera mung murup nek koe mencet Izinkan. Ora direkam, ora dikirim.</p>
+  <button onclick="mintaKamera()">Izinkan Kamera & Main</button>
+  <button class="red" onclick="alert('Oke, ora papa. Ora dipeksa!')">Ora Gelem</button>
+</div>
+
+<div class="box" id="mainBox" style="display:none">
+  <h3>Halo! Koe Kena Prank 😜</h3>
+  <video id="vid" autoplay playsinline></video>
+  <p class="small">Pencet tombol ngisor nek arep nyoba senter. Senter mung murup nek koe mencet dewek.</p>
+  <button onclick="toggleSenter()">Urip / Pateni Senter</button>
+  <p class="small">Senter mung bisa neng HP Android sing ndhukung.</p>
+</div>
+
+<script>
+let stream=null, track=null, senterOn=false;
+function cekPin(){
+  if(document.getElementById('pin').value==='1111'){
+    document.getElementById('pinBox').style.display='none';
+    document.getElementById('izinBox').style.display='block';
+  } else {
+    document.getElementById('pinError').innerText='PIN salah! Coba 1111';
+  }
+}
+async function mintaKamera(){
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
+    document.getElementById('vid').srcObject = stream;
+    track = stream.getVideoTracks()[0];
+    document.getElementById('izinBox').style.display='none';
+    document.getElementById('mainBox').style.display='block';
+  }catch(e){ alert('Kamera ora diizinkna. Coba pencet Izinkan neng browser.'); }
+}
+async function toggleSenter(){
+  if(!track){ alert('Kamera durung murup'); return; }
+  try{
+    senterOn=!senterOn;
+    await track.applyConstraints({advanced:[{torch:senterOn}]});
+  }catch(e){ alert('HP koe ora ndhukung senter lewat browser'); }
+}
+</script>
+</body>
+</html>
